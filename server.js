@@ -1,29 +1,34 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
-app.use(cors());
+
+// Engedélyezés minden origin számára (biztonságosabb a teszthez)
+app.use(cors({
+  origin: '*' // bárhonnan érkező kérést engedélyez
+}));
+
 app.use(express.json());
 
 let utolsoAdat = {};
 
-// Egyszerű teszt, ha megnyitod a böngészőben
-app.get("/", (req, res) => {
-  res.send("Szerver működik 🚀");
-});
+// Statikus fájlok
+app.use(express.static(path.join(__dirname, "public")));
 
-// POST route az adatok fogadására
+// POST adatok fogadására
 app.post("/", (req, res) => {
   utolsoAdat = req.body;
   console.log("Kapott adat:", utolsoAdat);
   res.json({ ok: true });
 });
 
-// GET route a display-nek
+// GET a display-nek
 app.get("/adat", (req, res) => {
   res.json(utolsoAdat);
 });
 
-app.listen(5000, () => {
-  console.log("Fut: http://localhost:5000");
+// Hallgatás minden interfészen
+app.listen(5000, "0.0.0.0", () => {
+  console.log("Fut minden hálózaton: http://0.0.0.0:5000");
 });
