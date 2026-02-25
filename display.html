@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Display - Üzenet megjelenítő</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #000;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+      }
+      #megjelenites {
+        transition: all 0.5s ease;
+        text-align: center;
+        text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3);
+        word-wrap: break-word;
+        max-width: 90vw;
+      }
+      #info {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(100, 200, 100, 0.8);
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 12px;
+        color: #fff;
+      }
+      #error {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 50, 50, 0.8);
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 12px;
+        color: #fff;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="info">⏳ Szerver IP betöltödik...</div>
+    <div id="error"></div>
+    <div id="megjelenites"></div>
+
+    <script>
+      let serverUrl = "http://localhost:5000";
+      let lastUpdate = 0;
+
+      // Szerver IP-jének lekérése
+      async function getServerUrl() {
+        try {
+          const res = await fetch(`http://${window.location.hostname}:5000/config`);
+          if (res.ok) {
+            const data = await res.json();
+            serverUrl = data.serverUrl;
+            document.getElementById("info").textContent = `✅ Csatlakozva: ${serverUrl}`;
+            startPolling();
+          }
+        } catch (err) {
+          document.getElementById("error").textContent = `❌ Szerver nem elérhető: ${window.location.hostname}:5000`;
+          document.getElementById("error").style.display = "block";
+          setTimeout(getServerUrl, 5000);
+        }
+      }
+
+      // Adatok frissítése
+      async function frissites() {
+        try {
+          const res = await fetch(`${serverUrl}/adat`);
+          if (!res.ok) throw new Error("HTTP " + res.status);
+
+          const data = await res.json();
+
+          if (!data.szoveg) {
+            document.getElementById("megjelenites").innerText = "Várakozás az üzenetre...";
+            document.getElementById("megjelenites").style.color = "#666";
+            document.getElementById("megjelenites").style.fontSize = "24px";
+            return;
+          }
+
+          const div = document.getElementById("megjelenites");
+
+          // Szöveg frissítése
+          if (data.szoveg !== div.innerText) {
+            div.innerText = data.szoveg;
+          }
+
+          // Szín frissítése
+          if (data.szin) {
+            div.style.color = data.szin;
+          }
+
+          // Betűméret frissítése
+          if (data.meret) {
+            div.style.fontSize = data.meret + "px";
+          }
+
+          document.getElementById("error").style.display = "none";
+          lastUpdate = Date.now();
+        } catch (err) {
+          console.error("Hiba a frissítésnél:", err);
+          document.getElementById("error").textContent = `⚠️ Frissítési hiba: ${err.message}`;
+          document.getElementById("error").style.display = "block";
+        }
+      }
+
+      function startPolling() {
+        frissites(); // Azonnali frissítés
+        setInterval(frissites, 1000); // Majd 1 másodpercenként
+      }
+
+      // Indítás
+      window.addEventListener("load", () => {
+        getServerUrl();
+      });
+    </script>
+  </body>
+</html>
