@@ -1,39 +1,38 @@
 <!doctype html>
 <html lang="hu">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Küldő oldal</title>
-  </head>
-  <body>
-    <h2>Üzenet küldése a display-re</h2>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Küldő oldal</title>
+</head>
+<body>
+  <h2>Üzenet küldése a display-re</h2>
 
-    <input id="text" placeholder="Írd ide a neved..." /><br/><br/>
-    <input id="color" placeholder="Válassz színt... (#000000)" /><br/><br/>
-    <input id="size" placeholder="Válassz méretet... (pl. 16)" /><br/><br/>
-    <button onclick="kuldes()">Küldés</button>
+  <input id="text" placeholder="Írd ide a neved..." /><br/><br/>
+  <input id="color" placeholder="Válassz színt... (#000000)" /><br/><br/>
+  <input id="size" placeholder="Válassz méretet... (pl. 16)" /><br/><br/>
+  <button onclick="kuldes()">Küldés</button>
 
-    <script>
-      async function kuldes() {
-        const data = {
-          szoveg: document.getElementById("text").value,
-          szin: document.getElementById("color").value || undefined,
-          meret: document.getElementById("size").value || undefined,
-        };
+  <script>
+    async function kuldes() {
+      const data = {
+        szoveg: document.getElementById("text").value,
+        szin: document.getElementById("color").value || undefined,
+        meret: document.getElementById("size").value || undefined
+      };
 
-        try {
-          await fetch("http://localhost:5000/", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          });
-          alert("Adatok elküldve!");
-        } catch (err) {
-          alert("Hiba a küldés során: " + err);
-        }
+      try {
+        // Relatív URL → mindig ugyanazon a szerveren megy a POST
+        await fetch("/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+        alert("Adatok elküldve!");
+      } catch (err) {
+        alert("Hiba a küldés során: " + err);
       }
-    </script>
-  </body>
+    }
+  </script>
+</body>
 </html>
