@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Display</title>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #111;
+        color: #fff;
+      }
+      #megjelenites {
+        transition: all 0.3s;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="megjelenites"></div>
+
+    <script>
+      async function frissites() {
+        try {
+          const res = await fetch("http://localhost:5000/adat");
+          const data = await res.json();
+
+          const div = document.getElementById("megjelenites");
+          div.innerText = data.szoveg || "";
+
+          if (data.szin) div.style.color = data.szin;
+          if (data.meret) div.style.fontSize = data.meret + "px";
+        } catch (err) {
+          console.error("Hiba a frissítésnél:", err);
+        }
+      }
+
+      // Frissítés 1 másodpercenként
+      setInterval(frissites, 1000);
+      frissites(); // azonnali frissítés betöltéskor
+    </script>
+  </body>
+</html>
